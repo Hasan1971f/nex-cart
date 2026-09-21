@@ -1,3 +1,4 @@
+import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import Navbar from "./components/Navbar";
 
@@ -6,6 +7,7 @@ function App() {
     <>
       <Navbar />
       <Hero />
+      <Footer/>
       <main className="mx-auto max-w-7xl px-4 py-20 text-center">
         <h1 className="text-4xl font-bold">
           Welcome to <span className="text-primary">NEXCART</span>
