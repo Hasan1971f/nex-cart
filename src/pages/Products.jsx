@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
+import CategoryFilter from "../components/CategoryFilter";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = (searchValue = "") => {
+  const fetchProducts = (url) => {
     setLoading(true);
 
-    const apiUrl = searchValue
-      ? `https://dummyjson.com/products/search?q=${searchValue}`
-      : "https://dummyjson.com/products";
-
-    fetch(apiUrl)
+    fetch(url)
       .then((response) => response.json())
       .then((data) => {
         setProducts(data.products);
@@ -26,24 +25,54 @@ const Products = () => {
       });
   };
 
+  const fetchCategories = () => {
+    fetch("https://dummyjson.com/products/category-list")
+      .then((response) => response.json())
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((error) => {
+        console.error("Failed to load categories:", error);
+      });
+  };
+
   useEffect(() => {
-    fetchProducts();
+    fetchProducts("https://dummyjson.com/products");
+    fetchCategories();
   }, []);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
+    setSelectedCategory("all");
 
     if (value.trim() === "") {
-      fetchProducts();
+      fetchProducts("https://dummyjson.com/products");
       return;
     }
 
-    fetchProducts(value);
+    fetchProducts(
+      `https://dummyjson.com/products/search?q=${value.trim()}`
+    );
   };
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    fetchProducts();
+    setSelectedCategory("all");
+    fetchProducts("https://dummyjson.com/products");
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setSearchTerm("");
+
+    if (category === "all") {
+      fetchProducts("https://dummyjson.com/products");
+      return;
+    }
+
+    fetchProducts(
+      `https://dummyjson.com/products/category/${category}`
+    );
   };
 
   return (
@@ -64,6 +93,14 @@ const Products = () => {
         />
       </div>
 
+      <div className="mb-8">
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      </div>
+
       {loading ? (
         <div className="flex min-h-[400px] items-center justify-center">
           <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -73,7 +110,7 @@ const Products = () => {
           <h2 className="text-2xl font-bold">No products found</h2>
 
           <p className="mt-2 text-base-content/60">
-            Try searching with a different product name.
+            Try searching or selecting another category.
           </p>
         </div>
       ) : (
